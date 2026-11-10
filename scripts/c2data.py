@@ -35,7 +35,7 @@ def log(*a):
 
 
 # --------------------------------------------------------------------------- http + cache
-def http_get(url, timeout=20, retries=2):
+def http_get(url, timeout=20, retries=4):
     """Returns bytes, or None for a 404 (no data for that day). Raises on other failures."""
     last = None
     for attempt in range(retries):
@@ -51,7 +51,7 @@ def http_get(url, timeout=20, retries=2):
                 raise
         except Exception as e:  # timeouts, resets
             last = e
-        time.sleep(1.5 * (attempt + 1))
+        time.sleep(2 ** (attempt + 1))  # 2s, 4s, 8s: servers that throttle need real backoff
     raise last
 
 
@@ -167,7 +167,7 @@ def fetch_dukascopy(symbol, point, days, cache_dir, end=None):
         raw = cached_get(cache_dir, f"duka/{symbol}/{d.isoformat()}.bi5", url, immutable_day(d))
         return parse_bi5_candles(raw, d, point)
     days_list = [d for d in day_range(days, end) if d.weekday() != 5]  # Saturday: market closed
-    return fetch_days(days_list, one, symbol, workers=6)
+    return fetch_days(days_list, one, symbol, workers=3)  # Dukascopy throttles above a few parallel requests
 
 
 # --------------------------------------------------------------------------- Binance archive

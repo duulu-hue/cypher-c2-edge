@@ -41,7 +41,8 @@ for (const mk of manifest.markets) {
     const f = { setups: r.setups, splitT: r.splitT, all: pickM(m.all), is: pickM(m.is), oos: pickM(m.oos), mc: E.monteCarlo(r.trades, P.riskPct, 1000, 11), skipped: r.skipped,
       trades: r.trades.map(t => ({ e: t.entryT, x: t.exitT, d: t.dir, en: t.entry, ex: t.exit, st: +t.stop.toFixed(5), tg: +t.target.toFixed(5), R: +t.R.toFixed(3), pnl: +t.pnl.toFixed(2), why: t.reason, oos: t.oos })) };
     const opt = job({ kind: 'optimize', base, params: P, fractal: fr, objective: 't', minTrades: 15, news: newsT });
-    f.optimizer = { tested: opt.tested, robustCount: opt.top.filter(x => x.oos.expR > 0 && x.oos.n >= 5).length, top: opt.top.slice(0, 10).map(x => ({ p: x.p, is: pickM(x.is), oos: pickM(x.oos) })) };
+    const top10 = opt.top.slice(0, 10);
+    f.optimizer = { tested: opt.tested, robustCount: top10.filter(x => x.oos.expR > 0 && x.oos.n >= 5).length, top: top10.map(x => ({ p: x.p, is: pickM(x.is), oos: pickM(x.oos) })) };
     if (key === '5-60' || (QUICK && key === '15-240' && !out.delta)) {
       const dl = job({ kind: 'delta', base, params: P, fractal: fr, news: newsT });
       out.delta = { fractal: key, base: { is: pickM(dl.base.is), oos: pickM(dl.base.oos) }, rows: dl.rows.map(x => ({ kind: x.kind, vol: x.vol, mode: x.mode, is: pickM(x.is), oos: pickM(x.oos) })), quality: dl.quality };
