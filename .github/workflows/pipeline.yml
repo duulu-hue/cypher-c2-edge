@@ -1,0 +1,65 @@
+name: Data, backtest and site
+
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: Days of history
+        default: '90'
+  schedule:
+    - cron: '23 22 * * 0-4'
+    - cron: '41 5,11,15 * * 1-5'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - id: pages
+        uses: actions/configure-pages@v5
+      - name: Restore download cache
+        uses: actions/cache@v4
+        with:
+          path: .cache
+          key: market-data-${{ github.run_id }}
+          restore-keys: market-data-
+      - name: Fetch market data and news
+        run: python scripts/build_data.py --out site/data --cache .cache --days "${{ github.event.inputs.days || '90' }}" --prev-url "${{ steps.pages.outputs.base_url }}"
+      - name: Run backtest
+        run: node scripts/run_backtest.mjs --data site/data --out site/data/results
+      - name: AI news brief
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AI_MODEL: ${{ vars.AI_MODEL }}
+        run: python scripts/ai_brief.py site/data
+      - name: Build site
+        run: node web/build.mjs --out site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
