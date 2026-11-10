@@ -93,3 +93,14 @@ test('Forex Factory JSON parsing', () => {
   const ev = E.parseFF('[{"title":"CPI m/m","country":"USD","date":"2026-11-10T08:30:00-05:00","impact":"High","forecast":"0.3%","previous":"0.2%"}]');
   assert.equal(ev[0].t, Date.UTC(2026, 10, 10, 13, 30)); assert.equal(E.usdSurpriseSign('Unemployment Rate'), -1);
 });
+
+test('walk-forward research only trades each pick on its unseen test window', async () => {
+  const { research } = await import('../scripts/research.mjs');
+  const P = Object.assign({}, E.DEFAULTS, { anchor: 'ny17' });
+  const R = research(E, job.gridCombos().slice(0, 40), base, { ltf: 15, htf: 240 }, P, []);
+  assert.ok(R.walkForward.folds.length >= 2);
+  for (const f of R.walkForward.folds) { assert.ok(f.split > f.from && f.to > f.split); }
+  const sumN = R.walkForward.folds.reduce((s, f) => s + (f.oos ? f.oos.n : 0), 0);
+  assert.equal(sumN, R.walkForward.oos.n);
+  assert.equal(R.costs.length, 4); assert.ok(R.costs[0].expR >= R.costs[3].expR);
+});

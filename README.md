@@ -6,7 +6,8 @@ GitHub does the work you can't do from a browser tab:
 
 * **Fetches data.** 90 days of 1-minute bars from Dukascopy (XAUUSD, EURUSD, GBPUSD, AUDUSD) and the Binance public archive (gold perpetual, PAXG). The Binance files carry real taker buy/sell volume, so delta is measured, not guessed.
 * **Fetches news.** The Forex Factory calendar several times a day, kept as a growing history so actual figures fill in after each release.
-* **Runs the backtest.** Every market × fractal (1m–15m, 5m–1H, 15m–4H), the parameter search and the Delta Lab, with costs. The results table is posted on each Actions run.
+* **Runs the backtest.** Every market × fractal (1m–15m, 5m–1H, 15m–4H), the parameter search and the Delta Lab, with costs. The results table is posted on each Actions run and saved to the `results` branch.
+* **Deep dives** (markets with `research` in `scripts/markets.json`, a year of history for gold and EURUSD): rolling walk-forward over all 810 settings, the settings that held up across test windows, and breakdowns by session, entry × target, news window and trading costs.
 * **Writes an AI news brief** with Claude, if you add an API key.
 * **Publishes the app** to GitHub Pages: a market strip, a period picker, **Run history test**, upcoming news with expected ranges, and the latest GitHub results.
 

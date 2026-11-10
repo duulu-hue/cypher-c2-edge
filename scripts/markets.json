@@ -2,39 +2,141 @@
   "days": 90,
   "markets": [
     {
-      "id": "XAUUSD", "name": "Gold spot", "source": "dukascopy", "symbol": "XAUUSD", "point": 1000, "digits": 2,
-      "currencies": ["USD"],
-      "costs": { "spread": 0.30, "commPerLot": 7, "slippage": 0.10, "contractSize": 100, "feeBps": 0 },
+      "id": "XAUUSD",
+      "name": "Gold spot",
+      "source": "dukascopy",
+      "symbol": "XAUUSD",
+      "point": 1000,
+      "digits": 2,
+      "currencies": [
+        "USD"
+      ],
+      "costs": {
+        "spread": 0.3,
+        "commPerLot": 7,
+        "slippage": 0.1,
+        "contractSize": 100,
+        "feeBps": 0
+      },
       "external": [
-        { "source": "binance-um", "symbol": "XAUUSDT", "label": "Binance gold perpetual" },
-        { "source": "binance-um", "symbol": "PAXGUSDT", "label": "Binance PAXG perpetual" },
-        { "source": "binance-spot", "symbol": "PAXGUSDT", "label": "Binance PAXG spot" }
+        {
+          "source": "binance-um",
+          "symbol": "XAUUSDT",
+          "label": "Binance gold perpetual"
+        },
+        {
+          "source": "binance-um",
+          "symbol": "PAXGUSDT",
+          "label": "Binance PAXG perpetual"
+        },
+        {
+          "source": "binance-spot",
+          "symbol": "PAXGUSDT",
+          "label": "Binance PAXG spot"
+        }
+      ],
+      "days": 365,
+      "research": [
+        "1-15",
+        "5-60",
+        "15-240"
       ]
     },
     {
-      "id": "XAUUSDT", "name": "Gold perpetual (Binance)", "source": "binance-um", "symbol": "XAUUSDT", "digits": 2,
-      "currencies": ["USD"],
-      "costs": { "spread": 0.10, "commPerLot": 0, "slippage": 0.10, "contractSize": 1, "feeBps": 8 }
+      "id": "XAUUSDT",
+      "name": "Gold perpetual (Binance)",
+      "source": "binance-um",
+      "symbol": "XAUUSDT",
+      "digits": 2,
+      "currencies": [
+        "USD"
+      ],
+      "costs": {
+        "spread": 0.1,
+        "commPerLot": 0,
+        "slippage": 0.1,
+        "contractSize": 1,
+        "feeBps": 8
+      }
     },
     {
-      "id": "PAXGUSDT", "name": "PAX Gold (Binance spot)", "source": "binance-spot", "symbol": "PAXGUSDT", "digits": 2,
-      "currencies": ["USD"],
-      "costs": { "spread": 0.50, "commPerLot": 0, "slippage": 0.20, "contractSize": 1, "feeBps": 20 }
+      "id": "PAXGUSDT",
+      "name": "PAX Gold (Binance spot)",
+      "source": "binance-spot",
+      "symbol": "PAXGUSDT",
+      "digits": 2,
+      "currencies": [
+        "USD"
+      ],
+      "costs": {
+        "spread": 0.5,
+        "commPerLot": 0,
+        "slippage": 0.2,
+        "contractSize": 1,
+        "feeBps": 20
+      }
     },
     {
-      "id": "EURUSD", "name": "Euro / US dollar", "source": "dukascopy", "symbol": "EURUSD", "point": 100000, "digits": 5,
-      "currencies": ["USD", "EUR"],
-      "costs": { "spread": 0.00008, "commPerLot": 7, "slippage": 0.00002, "contractSize": 100000, "feeBps": 0 }
+      "id": "EURUSD",
+      "name": "Euro / US dollar",
+      "source": "dukascopy",
+      "symbol": "EURUSD",
+      "point": 100000,
+      "digits": 5,
+      "currencies": [
+        "USD",
+        "EUR"
+      ],
+      "costs": {
+        "spread": 8e-05,
+        "commPerLot": 7,
+        "slippage": 2e-05,
+        "contractSize": 100000,
+        "feeBps": 0
+      },
+      "days": 365,
+      "research": [
+        "15-240",
+        "5-60"
+      ]
     },
     {
-      "id": "GBPUSD", "name": "British pound / US dollar", "source": "dukascopy", "symbol": "GBPUSD", "point": 100000, "digits": 5,
-      "currencies": ["USD", "GBP"],
-      "costs": { "spread": 0.00010, "commPerLot": 7, "slippage": 0.00002, "contractSize": 100000, "feeBps": 0 }
+      "id": "GBPUSD",
+      "name": "British pound / US dollar",
+      "source": "dukascopy",
+      "symbol": "GBPUSD",
+      "point": 100000,
+      "digits": 5,
+      "currencies": [
+        "USD",
+        "GBP"
+      ],
+      "costs": {
+        "spread": 0.0001,
+        "commPerLot": 7,
+        "slippage": 2e-05,
+        "contractSize": 100000,
+        "feeBps": 0
+      }
     },
     {
-      "id": "AUDUSD", "name": "Australian dollar / US dollar", "source": "dukascopy", "symbol": "AUDUSD", "point": 100000, "digits": 5,
-      "currencies": ["USD", "AUD"],
-      "costs": { "spread": 0.00010, "commPerLot": 7, "slippage": 0.00002, "contractSize": 100000, "feeBps": 0 }
+      "id": "AUDUSD",
+      "name": "Australian dollar / US dollar",
+      "source": "dukascopy",
+      "symbol": "AUDUSD",
+      "point": 100000,
+      "digits": 5,
+      "currencies": [
+        "USD",
+        "AUD"
+      ],
+      "costs": {
+        "spread": 0.0001,
+        "commPerLot": 7,
+        "slippage": 2e-05,
+        "contractSize": 100000,
+        "feeBps": 0
+      }
     }
   ]
 }

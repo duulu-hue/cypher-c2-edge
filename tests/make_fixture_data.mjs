@@ -27,7 +27,7 @@ for (const s of specs) {
   const obj = { id: s.id, name: s.name, source: s.source, symbol: s.symbol, digits: s.digits, currencies: s.currencies, costs: s.costs, resMin: 1, t0: b.t[0], dt, scale: sc, o, h, l, c, v, td, from: b.t[0], to: b.t[n - 1], bars: n, generatedAt: Date.now() };
   if (s.ext) { obj.ev = Array.from(b.ev); obj.etd = obj.ev.map((x, i) => Math.round(x * Math.tanh((b.c[i] - b.o[i]) * 3))); obj.external = { label: 'Fixture external volume', coverage: 1 }; }
   fs.writeFileSync(path.join(OUT, 'candles', s.id + '.json.gz'), zlib.gzipSync(JSON.stringify(obj)));
-  manifest.markets.push({ id: s.id, name: s.name, source: s.source, symbol: s.symbol, digits: s.digits, currencies: s.currencies, costs: s.costs, file: `candles/${s.id}.json.gz`, from: obj.from, to: obj.to, bars: n, trueDelta: !!td, external: obj.external || null });
+  manifest.markets.push({ days: DAYS, research: s.id === 'XAUUSD' ? ['5-60'] : undefined, id: s.id, name: s.name, source: s.source, symbol: s.symbol, digits: s.digits, currencies: s.currencies, costs: s.costs, file: `candles/${s.id}.json.gz`, from: obj.from, to: obj.to, bars: n, trueDelta: !!td, external: obj.external || null });
 }
 fs.writeFileSync(path.join(OUT, 'markets.json'), JSON.stringify(manifest, null, 1));
 const now = Date.now(), ev = (dh, title, cur, impact, f, p) => ({ t: now + dh * 3600e3, title, currency: cur, impact, forecast: f, previous: p, actual: '' });

@@ -11,6 +11,7 @@ const require = createRequire(import.meta.url);
 const E = require('../engine/engine.js');
 globalThis.ENGINE = E;
 const job = require('../engine/worker.js');
+import { research, researchMarkdown } from './research.mjs';
 
 const args = Object.fromEntries(process.argv.slice(2).map((a, i, all) => a.startsWith('--') ? [a.slice(2), all[i + 1] && !all[i + 1].startsWith('--') ? all[i + 1] : true] : null).filter(Boolean));
 const DATA = args.data || 'site/data', OUT = args.out || path.join(DATA, 'results'), QUICK = !!args.quick;
@@ -32,7 +33,7 @@ for (const mk of manifest.markets) {
   const newsT = news.map(e => e.t);
   const P = Object.assign({}, E.DEFAULTS, mk.costs || {}, { htfOffset: 0, anchor: 'ny17', levelVol: base.ev ? 'futures' : 'broker', deltaVol: base.ev ? 'futures' : 'broker', deltaSrc: base.etd || base.td ? 'true' : 'clv' });
   if (!base.notes.hasVolume && !base.ev) { P.levelVol = 'unit'; P.deltaVol = 'unit'; }
-  const out = { name: mk.name, from: base.t[0], to: base.t[base.t.length - 1], bars: base.t.length, external: mk.external || null, trueDelta: !!base.td, newsEvents: news.filter(e => e.t >= base.t[0] && e.t <= base.t[base.t.length - 1]).length, params: P, fractals: {} };
+  const out = { name: mk.name, days: mk.days || manifest.days, from: base.t[0], to: base.t[base.t.length - 1], bars: base.t.length, external: mk.external || null, trueDelta: !!base.td, newsEvents: news.filter(e => e.t >= base.t[0] && e.t <= base.t[base.t.length - 1]).length, params: P, fractals: {} };
   for (const [key, fr] of Object.entries(FRACTALS)) {
     if (fr.ltf % base.resMin) continue;
     if (QUICK && key === '1-15') continue;
@@ -46,6 +47,10 @@ for (const mk of manifest.markets) {
     if (key === '5-60' || (QUICK && key === '15-240' && !out.delta)) {
       const dl = job({ kind: 'delta', base, params: P, fractal: fr, news: newsT });
       out.delta = { fractal: key, base: { is: pickM(dl.base.is), oos: pickM(dl.base.oos) }, rows: dl.rows.map(x => ({ kind: x.kind, vol: x.vol, mode: x.mode, is: pickM(x.is), oos: pickM(x.oos) })), quality: dl.quality };
+    }
+    if ((mk.research || []).includes(key) && !QUICK) {
+      f.research = research(E, job.gridCombos(), base, fr, P, news);
+      console.log(`  deep dive ${mk.id} ${fr.label}: walk-forward ${f.research.walkForward.oos.n} trades, avg ${f.research.walkForward.oos.expR}R (${f.research.seconds}s)`);
     }
     out.fractals[key] = f;
     console.log(`${mk.id} ${fr.label}: ${m.all.n} trades, win ${(m.all.winRate * 100).toFixed(1)}%, avg ${m.all.expR.toFixed(2)}R, OOS ${m.oos.expR.toFixed(2)}R (${m.oos.n})`);
@@ -66,11 +71,11 @@ fs.writeFileSync(path.join(OUT, 'results.json'), JSON.stringify(results));
 const pc = x => x == null ? '–' : (x * 100).toFixed(1) + '%', r2 = x => x == null ? '–' : x.toFixed(2);
 const DN = Object.fromEntries(E.DELTA_SOURCES.map(d => [d.id, d.name]));
 let md = `## C2 Edge backtest${results.fixture ? ' (FIXTURE DATA: test run, not market results)' : ''}\n\n`;
-md += `Last ${manifest.days} days of 1-minute data. In-sample = first 67% of the period, out-of-sample (OOS) = the rest. Costs included. Default settings (CISD close entry, 2R target, London + NY hours, news blackout).\n\n`;
-md += '| Market | Fractal | Trades | Win | Avg R | PF | Net | Max DD | IS R | OOS R (n) | Best optimizer setting IS → OOS | Top-10 robust |\n|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|\n';
+md += `1-minute data (days per market in the table). In-sample = first 67% of the period, out-of-sample (OOS) = the rest. Costs included. Default settings (CISD close entry, 2R target, London + NY hours, news blackout).\n\n`;
+md += '| Market | Days | Fractal | Trades | Win | Avg R | PF | Net | Max DD | IS R | OOS R (n) | Best optimizer setting IS → OOS | Top-10 robust |\n|---|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---|---:|\n';
 for (const [id, m] of Object.entries(results.markets)) for (const [k, f] of Object.entries(m.fractals)) {
   const b = f.optimizer.top[0];
-  md += `| ${id} | ${FRACTALS[k].label} | ${f.all.n} | ${pc(f.all.winRate)} | ${r2(f.all.expR)} | ${r2(f.all.pf)} | ${pc(f.all.retPct)} | ${pc(f.all.maxDD)} | ${r2(f.is.expR)} | ${r2(f.oos.expR)} (${f.oos.n}) | ${b ? `${b.p.entryModel}/${b.p.targetMode === 'rr' ? b.p.rr + 'R' : b.p.targetMode}/vwap ${b.p.vwapMode}/frvp ${b.p.frvpMode}/delta ${b.p.deltaMode}: ${r2(b.is.expR)} → ${r2(b.oos.expR)}` : 'too few trades'} | ${f.optimizer.robustCount}/${f.optimizer.top.length} |\n`;
+  md += `| ${id} | ${m.days} | ${FRACTALS[k].label} | ${f.all.n} | ${pc(f.all.winRate)} | ${r2(f.all.expR)} | ${r2(f.all.pf)} | ${pc(f.all.retPct)} | ${pc(f.all.maxDD)} | ${r2(f.is.expR)} | ${r2(f.oos.expR)} (${f.oos.n}) | ${b ? `${b.p.entryModel}/${b.p.targetMode === 'rr' ? b.p.rr + 'R' : b.p.targetMode}/vwap ${b.p.vwapMode}/frvp ${b.p.frvpMode}/delta ${b.p.deltaMode}: ${r2(b.is.expR)} → ${r2(b.oos.expR)}` : 'too few trades'} | ${f.optimizer.robustCount}/${f.optimizer.top.length} |\n`;
 }
 md += '\n### Delta sources (5m-1H, used as a filter)\n\n| Market | Best in-sample | OOS R with it | OOS R without | Next-3-bar hit rate |\n|---|---|---:|---:|---:|\n';
 for (const [id, m] of Object.entries(results.markets)) {
@@ -79,6 +84,7 @@ for (const [id, m] of Object.entries(results.markets)) {
   const q = best && m.delta.quality.find(y => y.kind === best.kind && y.vol === best.vol);
   md += best ? `| ${id} | ${DN[best.kind]} · ${best.vol} · ${best.mode} | ${r2(best.oos.expR)} | ${r2(m.delta.base.oos.expR)} | ${q ? pc(q.hitRate) : '–'} |\n` : `| ${id} | not enough trades | | | |\n`;
 }
+for (const [id, m] of Object.entries(results.markets)) for (const [k, f] of Object.entries(m.fractals)) if (f.research) md += researchMarkdown(id, FRACTALS[k].label, f.research);
 md += `\nA setting is only worth trading if it stays positive out-of-sample with a reasonable number of trades. Ran in ${results.seconds}s.\n`;
 fs.writeFileSync(path.join(OUT, 'summary.md'), md);
 if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, md);

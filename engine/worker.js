@@ -1,3 +1,15 @@
+// The parameter grid the optimizer and the walk-forward search explore (810 combinations).
+function gridCombos() {
+  var out = [];
+  var entries = ['cisd', 'retest', 'ic'];
+  var targets = [{ targetMode: 'rr', rr: 1.5 }, { targetMode: 'rr', rr: 2 }, { targetMode: 'rr', rr: 3 }, { targetMode: 'sd', sd: 2 }, { targetMode: 'liq' }];
+  var vw = ['off', 'trend', 'discount'], fr = ['off', 'level', 'value'], dm = ['off', 'disp', 'div'], bufs = [0.1, 0.3];
+  entries.forEach(function (en) { targets.forEach(function (tg) { vw.forEach(function (v) { fr.forEach(function (f) { dm.forEach(function (d) { bufs.forEach(function (bf) {
+    out.push(Object.assign({ entryModel: en, vwapMode: v, frvpMode: f, deltaMode: d, bufferATR: bf }, tg));
+  }); }); }); }); }); });
+  return out;
+}
+
 function job(msg, progress) {
   var E = ENGINE, P = msg.params, base = msg.base;
   progress = progress || function () {};
@@ -10,14 +22,12 @@ function job(msg, progress) {
   vols.push('unit');
 
   if (msg.kind === 'optimize') {
-    var entries = ['cisd', 'retest', 'ic'];
-    var targets = [{ targetMode: 'rr', rr: 1.5 }, { targetMode: 'rr', rr: 2 }, { targetMode: 'rr', rr: 3 }, { targetMode: 'sd', sd: 2 }, { targetMode: 'liq' }];
-    var vw = ['off', 'trend', 'discount'], fr = ['off', 'level', 'value'], dm = ['off', 'disp', 'div'], bufs = [0.1, 0.3];
-    var total = entries.length * targets.length * vw.length * fr.length * dm.length * bufs.length, done = 0, keep = [];
-    entries.forEach(function (en) { targets.forEach(function (tg) { vw.forEach(function (v) { fr.forEach(function (f) { dm.forEach(function (d) { bufs.forEach(function (bf) {
-      var p = Object.assign({}, P, tg, { entryModel: en, vwapMode: v, frvpMode: f, deltaMode: d, bufferATR: bf });
+    var combos = gridCombos(), total = combos.length, done = 0, keep = [];
+    combos.forEach(function (c) {
+      var en = c.entryModel, v = c.vwapMode, f = c.frvpMode, d = c.deltaMode, bf = c.bufferATR;
+      var p = Object.assign({}, P, c);
       if (en !== 'ic') p.stopMode = 'extreme';
-      if (tg.targetMode !== 'sd') p.sd = P.sd;
+      if (c.targetMode !== 'sd') p.sd = P.sd;
       var r = E.simulate(ctx, p), m = E.split(r), is = m.is, score = -Infinity;
       if (is.n >= msg.minTrades) {
         if (msg.objective === 't') score = is.expR * Math.sqrt(is.n);
@@ -32,7 +42,7 @@ function job(msg, progress) {
       }
       done++;
       if (done % 15 === 0) progress(done / total, done + ' of ' + total + ' combinations');
-    }); }); }); }); }); });
+    });
     return { tested: total, top: keep };
   }
 
@@ -65,4 +75,4 @@ if (typeof WorkerGlobalScope !== 'undefined' && typeof importScripts === 'functi
     } catch (err) { self.postMessage({ error: String(err && err.message || err) }); }
   };
 }
-if (typeof module !== 'undefined' && module.exports) module.exports = job;
+if (typeof module !== 'undefined' && module.exports) { module.exports = job; module.exports.gridCombos = gridCombos; }

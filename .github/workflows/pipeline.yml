@@ -1,6 +1,6 @@
 name: Data, backtest and site
 
-# Fetches 90 days of 1-minute data and the Forex Factory calendar, runs the backtest,
+# Fetches 1-minute data (length per market in scripts/markets.json) and the Forex Factory calendar, runs the backtest,
 # optionally writes the AI news brief, then publishes the app to GitHub Pages.
 on:
   push:
@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
     inputs:
       days:
-        description: Days of history
-        default: '90'
+        description: Days of history for every market (leave empty to use markets.json)
+        default: ''
   schedule:
     - cron: '23 22 * * 0-4'   # daily after the 17:00 New York rollover (Sun–Thu evenings UTC)
     - cron: '41 5,11,15 * * 1-5' # news refresh through the trading day
@@ -27,7 +27,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,7 +45,7 @@ jobs:
           key: market-data-${{ github.run_id }}
           restore-keys: market-data-
       - name: Fetch market data and news
-        run: python scripts/build_data.py --out site/data --cache .cache --days "${{ github.event.inputs.days || '90' }}" --prev-url "${{ steps.pages.outputs.base_url }}"
+        run: python scripts/build_data.py --out site/data --cache .cache --days "${{ github.event.inputs.days || '' }}" --prev-url "${{ steps.pages.outputs.base_url }}"
       - name: Save download cache (even if a later step fails)
         if: always()
         uses: actions/cache/save@v4

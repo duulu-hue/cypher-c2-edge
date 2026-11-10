@@ -132,7 +132,7 @@
         <p class="hint" id="histText" style="max-width:78ch;margin:12px 0"></p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
           <label for="period" class="hint">Period</label>
-          <select id="period" class="sel"><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90" selected>Last 90 days</option></select>
+          <select id="period" class="sel"><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90" selected>Last 90 days</option><option value="180">Last 180 days</option><option value="365">Last 365 days</option></select>
           <button class="btn primary" id="histRun">Run history test</button>
           <span class="hint" id="histStatus"></span>
         </div>
@@ -141,6 +141,11 @@
         <div class="head"><h2>Latest GitHub run</h2><span class="hint" id="ghWhen"></span></div>
         <p class="hint">Computed on GitHub with the default settings for this market. Your settings on the left only change the results below.</p>
         <div class="tbl"><table id="ghTable"><thead><tr><th>Fractal</th><th class="n">Trades</th><th class="n">Win rate</th><th class="n">Avg R</th><th class="n">Profit factor</th><th class="n">Net</th><th class="n">Max DD</th><th class="n">OOS R (trades)</th><th>Best optimizer setting, in-sample → out-of-sample</th><th class="n">Robust top-10</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card" id="ddCard" hidden>
+        <div class="head"><h2>Deep dive from GitHub</h2><div class="strip" id="ddFr" role="group" aria-label="Fractal"></div></div>
+        <p class="hint">Walk-forward re-picks the best of 810 settings on each training window and trades it only on the next unseen window. Its result is the closest thing to live trading a backtest can give.</p>
+        <div id="ddBody"></div>
       </div>
       <div class="banner" id="synthBanner" hidden><b>Synthetic demo data.</b> These numbers come from simulated gold prices that let you see the app working; they say nothing about the strategy. Load your real XAUUSD candles in <a href="#data" data-goto="data">Data</a> to get the 90-day result.</div>
       <div class="card">

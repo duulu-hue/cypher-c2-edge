@@ -580,7 +580,7 @@ function selectMarket(id) {
   $('deltaVol').value = m.external ? 'futures' : 'broker';
   $('deltaSrc').value = m.trueDelta || m.external ? 'true' : 'clv';
   try { localStorage.setItem('c2edge.market', id); } catch (e) {}
-  S.full = null; renderGH(); runHistory();
+  S.full = null; renderGH(); renderDeep(); runHistory();
 }
 function runHistory() {
   var m = S.market; if (!m) return;
@@ -609,6 +609,40 @@ function renderGH() {
     tr.innerHTML = '<td>' + FR[k].label + '</td><td class="n">' + f.all.n + '</td><td class="n">' + pct(f.all.winRate) + '</td><td class="n ' + sgnCls(f.all.expR) + '">' + fx(f.all.expR) + '</td><td class="n">' + (f.all.pf == null ? '∞' : fx(f.all.pf)) + '</td><td class="n ' + sgnCls(f.all.retPct) + '">' + pct(f.all.retPct) + '</td><td class="n">' + pct(f.all.maxDD) + '</td><td class="n ' + sgnCls(f.oos.expR) + '">' + fx(f.oos.expR) + ' <span class="mut">(' + f.oos.n + ')</span></td><td style="white-space:normal;min-width:260px">' + best + '</td><td class="n">' + f.optimizer.robustCount + '/' + f.optimizer.top.length + '</td>';
     tb.appendChild(tr);
   });
+}
+var ddSel = null;
+function renderDeep() {
+  var res = S.pipe && S.pipe.results, m = S.market, mr = res && m && res.markets[m.id];
+  var keys = mr ? Object.keys(mr.fractals).filter(function (k) { return mr.fractals[k].research; }) : [];
+  $('ddCard').hidden = !keys.length;
+  if (!keys.length) return;
+  if (keys.indexOf(ddSel) < 0) ddSel = keys[0];
+  var strip = $('ddFr'); strip.innerHTML = '';
+  keys.forEach(function (k) {
+    var b = document.createElement('button'); b.type = 'button'; b.textContent = FR[k].label; b.setAttribute('aria-pressed', k === ddSel ? 'true' : 'false');
+    b.addEventListener('click', function () { ddSel = k; renderDeep(); }); strip.appendChild(b);
+  });
+  var R = mr.fractals[ddSel].research, w = R.walkForward, o = w.oos;
+  var row = function (cells) { return '<tr>' + cells.join('') + '</tr>'; }, n = function (x, cls) { return '<td class="n ' + (cls || '') + '">' + x + '</td>'; };
+  var rr = function (x) { return n(fx(x), sgnCls(x)); };
+  var h = '<div class="kpis" style="margin:10px 0 14px">' + kpi('Walk-forward trades', o.n, R.spanDays + ' days · ' + w.folds.length + ' windows') + kpi('Win rate', pct(o.winRate)) +
+    kpi('Avg R per trade', fx(o.expR), 'total ' + fx(o.totalR) + 'R', sgnCls(o.expR)) + kpi('Profit factor', o.pf == null ? '∞' : fx(o.pf)) + kpi('Max drawdown', fx(o.maxDDR) + 'R') + '</div>';
+  h += '<h3 style="margin:6px 0">Each window</h3><div class="tbl"><table><thead><tr><th>Train</th><th>Test until</th><th>Setting picked</th><th class="n">Train R (n)</th><th class="n">Test R (n)</th></tr></thead><tbody>';
+  w.folds.forEach(function (f) {
+    h += f.pick ? row(['<td>' + fmtDay(f.from) + ' → ' + fmtDay(f.split) + '</td>', '<td>' + fmtDay(f.to) + '</td>', '<td style="white-space:normal">' + esc(f.pick) + '</td>', n(fx(f.is.expR) + ' (' + f.is.n + ')'), n(fx(f.oos.expR) + ' (' + f.oos.n + ')', sgnCls(f.oos.expR))])
+      : row(['<td>' + fmtDay(f.from) + ' → ' + fmtDay(f.split) + '</td>', '<td>' + fmtDay(f.to) + '</td>', '<td class="mut" colspan="3">Not enough trades to pick a setting</td>']);
+  });
+  h += '</tbody></table></div>';
+  h += '<h3 style="margin:16px 0 6px">Most consistent settings</h3><p class="hint">Positive in the most test windows. Chosen with hindsight: candidates to confirm on new data, not proof.</p><div class="tbl"><table><thead><tr><th>Setting</th><th class="n">Positive windows</th><th class="n">Trades</th><th class="n">Win</th><th class="n">Avg R</th></tr></thead><tbody>';
+  R.consistent.forEach(function (c) { h += row(['<td style="white-space:normal">' + esc(c.setting) + '</td>', n(c.positive + '/' + c.windows), n(c.all.n), n(pct(c.all.winRate)), rr(c.all.expR)]); });
+  h += '</tbody></table></div><div class="grid2" style="margin-top:16px"><div><h3 style="margin-bottom:6px">By session (default settings, all hours)</h3><div class="tbl"><table><thead><tr><th>Session UTC</th><th class="n">Trades</th><th class="n">Win</th><th class="n">Avg R</th></tr></thead><tbody>';
+  Object.keys(R.bySession).forEach(function (k) { var v = R.bySession[k]; h += row(['<td>' + esc(k) + '</td>', n(v.n), n(pct(v.winRate)), rr(v.expR)]); });
+  h += '</tbody></table></div></div><div><h3 style="margin-bottom:6px">News blackout and costs</h3><div class="tbl"><table><thead><tr><th class="n">Blackout ±min</th><th class="n">Avg R</th><th class="n">Costs ×</th><th class="n">Avg R</th></tr></thead><tbody>';
+  for (var i = 0; i < R.newsWindows.length; i++) h += row([n(R.newsWindows[i].minutes), rr(R.newsWindows[i].expR), n(R.costs[i].multiple), rr(R.costs[i].expR)]);
+  h += '</tbody></table></div></div></div><h3 style="margin:16px 0 6px">Entry × target</h3><div class="tbl"><table><thead><tr><th>Entry</th><th>Target</th><th class="n">Trades</th><th class="n">Win</th><th class="n">Avg R</th><th class="n">In-sample R</th><th class="n">Out-of-sample R</th></tr></thead><tbody>';
+  R.entryTarget.forEach(function (e) { h += row(['<td>' + LABEL.entryModel[e.entry] + '</td>', '<td>' + e.target + '</td>', n(e.all.n), n(pct(e.all.winRate)), rr(e.all.expR), rr(e.is.expR), rr(e.oos.expR)]); });
+  h += '</tbody></table></div>';
+  $('ddBody').innerHTML = h;
 }
 function renderPipe() {
   var man = S.pipe.manifest, tb = $('pipeTable').querySelector('tbody'); tb.innerHTML = '';
