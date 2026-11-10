@@ -3,6 +3,9 @@ name: Data, backtest and site
 # Fetches 90 days of 1-minute data and the Forex Factory calendar, runs the backtest,
 # optionally writes the AI news brief, then publishes the app to GitHub Pages.
 on:
+  push:
+    branches: [main]
+    paths: ['engine/**', 'scripts/**', 'web/**', '.github/workflows/pipeline.yml']
   workflow_dispatch:
     inputs:
       days:
