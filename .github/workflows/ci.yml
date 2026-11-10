@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Engine tests (logic, costs, lookahead)
+        run: node --test tests/engine.test.mjs
+      - name: Data fetcher tests
+        run: python -m unittest discover -s tests -v
+      - name: Pipeline smoke test on fixture data
+        run: |
+          node tests/make_fixture_data.mjs site/data 30
+          node scripts/run_backtest.mjs --data site/data --quick
+          node web/build.mjs --out site
+          test -s site/index.html
+      - name: Live data probe (does not fail the build)
+        continue-on-error: true
+        run: python scripts/build_data.py --out probe --days 3 --only XAUUSD,XAUUSDT --skip-news
