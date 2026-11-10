@@ -1,0 +1,121 @@
+<title>C2 Edge Gold Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a trading desk. Sticky header, settings rail on the left, results on the right; one column on phones. */
+:root {
+  --bg: #F1F2EE; --panel: #FFFFFF; --sunk: #E8EAE5; --ink: #161A1F; --muted: #5D6570; --line: #D6DAD3;
+  --gold: #8E6A1B; --gold-ink: #FFFFFF; --gold-soft: #EFE5CC; --buy: #17806F; --sell: #A8355A; --warn: #A86A12; --focus: #2F6FD0;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1115; --panel: #161A20; --sunk: #1C2129; --ink: #E6E8EB; --muted: #959DA8; --line: #2A3039;
+  --gold: #D6AF57; --gold-ink: #1A1408; --gold-soft: #3A301B; --buy: #3DB5A4; --sell: #E36F8F; --warn: #E2A64C; --focus: #6EA2F0; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1115; --panel: #161A20; --sunk: #1C2129; --ink: #E6E8EB; --muted: #959DA8; --line: #2A3039;
+  --gold: #D6AF57; --gold-ink: #1A1408; --gold-soft: #3A301B; --buy: #3DB5A4; --sell: #E36F8F; --warn: #E2A64C; --focus: #6EA2F0; color-scheme: dark }
+* { box-sizing: border-box }
+html, body { background: var(--bg); color: var(--ink) }
+body { font-family: var(--f-body); font-size: 14px; line-height: 1.45; margin: 0 }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel) }
+.num, td.n, .kpi b { font-family: var(--f-mono); font-variant-numeric: tabular-nums }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0 }
+h2 { font-size: 18px; font-weight: 600 }
+h3 { font-size: 13px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+a { color: var(--gold) }
+button, select, input, textarea { font: inherit; color: inherit }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--panel); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 10px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px }
+.brand { display: flex; align-items: baseline; gap: 10px }
+.brand h1 { font-size: 21px; font-weight: 700; letter-spacing: .01em }
+.brand .sym { font-family: var(--f-mono); font-size: 12px; color: var(--gold); border: 1px solid var(--gold); border-radius: 4px; padding: 1px 6px }
+nav.tabs { display: flex; gap: 2px; flex-wrap: wrap }
+nav.tabs button { background: none; border: 0; padding: 7px 11px; border-radius: 6px; cursor: pointer; color: var(--muted); font-weight: 500 }
+nav.tabs button[aria-selected="true"] { color: var(--ink); background: var(--sunk) }
+.spacer { flex: 1 }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 9px; border-radius: 999px; background: var(--sunk); color: var(--muted); white-space: nowrap }
+.pill.warn { background: var(--gold-soft); color: var(--ink) }
+.pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted) }
+.pill.ok .dot { background: var(--buy) } .pill.warn .dot { background: var(--warn) }
+.btn { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 7px 12px; cursor: pointer; font-weight: 500 }
+.btn:hover { border-color: var(--muted) }
+.btn.primary { background: var(--gold); color: var(--gold-ink); border-color: var(--gold) }
+.btn:disabled { opacity: .5; cursor: default }
+
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 40px;
+  display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 18px; align-items: start; max-width: 1500px; margin: 0 auto }
+@media (max-width: 920px) { .wrap { grid-template-columns: minmax(0, 1fr) } aside.rail { position: static !important; max-height: none !important; order: 2 } }
+aside.rail { position: sticky; top: 70px; max-height: calc(100vh - 86px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r) }
+details.grp { border-bottom: 1px solid var(--line) }
+details.grp:last-child { border-bottom: 0 }
+details.grp summary { cursor: pointer; padding: 10px 14px; font-family: var(--f-display); font-weight: 600; font-size: 14px; list-style: none; display: flex; justify-content: space-between }
+details.grp summary::after { content: "+"; color: var(--muted) }
+details.grp[open] summary::after { content: "−" }
+.fields { padding: 0 14px 12px; display: grid; gap: 9px }
+.f { display: grid; gap: 3px }
+.f label, .f .lab { font-size: 12px; color: var(--muted) }
+.f select, .f input[type=number], .f input[type=text] { width: 100%; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg) }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px }
+.chk { display: flex; gap: 8px; align-items: center; font-size: 13px }
+.hint { font-size: 12px; color: var(--muted) }
+
+main { min-width: 0; display: grid; gap: 16px }
+section.view { display: grid; gap: 16px; min-width: 0 }
+section.view > * { min-width: 0 }
+[hidden] { display: none !important }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; min-width: 0 }
+.card > h2 + .hint { margin-top: 2px }
+.head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between; margin-bottom: 10px }
+.banner { border: 1px solid var(--warn); background: var(--gold-soft); border-radius: var(--r); padding: 10px 14px; font-size: 13px }
+.banner b { font-weight: 600 }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px }
+.kpi { border: 1px solid var(--line); border-radius: 6px; padding: 9px 11px; background: var(--bg) }
+.kpi span { display: block; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted) }
+.kpi b { display: block; font-size: 20px; font-weight: 500; margin-top: 2px }
+.kpi small { font-size: 11px; color: var(--muted); font-family: var(--f-mono) }
+.pos { color: var(--buy) } .neg { color: var(--sell) } .mut { color: var(--muted) }
+.tbl { overflow-x: auto }
+table { width: 100%; border-collapse: collapse; font-size: 13px }
+th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap }
+td { padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap }
+td.n, th.n { text-align: right }
+tr.sel td { background: var(--gold-soft) }
+tr.click { cursor: pointer }
+tr.click:hover td { background: var(--sunk) }
+.tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; background: var(--sunk); color: var(--muted) }
+.tag.long { color: var(--buy) } .tag.short { color: var(--sell) } .tag.hi { background: var(--sell); color: #fff } .tag.md { background: var(--warn); color: #fff }
+.chart { height: 380px; width: 100%; position: relative }
+.chart.sm { height: 200px }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
+.bar { height: 8px; border-radius: 4px; background: var(--sunk); overflow: hidden }
+.bar i { display: block; height: 100%; background: var(--gold) }
+.drop { border: 1.5px dashed var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 8px; background: var(--bg) }
+.drop.over { border-color: var(--gold) }
+.drop input[type=file] { font-size: 13px; max-width: 100% }
+textarea { width: 100%; min-height: 110px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); padding: 8px; font-family: var(--f-mono); font-size: 12px }
+.ai { font-size: 14px; line-height: 1.55; max-width: 78ch }
+.ai h4 { font-family: var(--f-display); font-size: 15px; margin: 14px 0 4px }
+.ai ul { padding-left: 20px; margin: 4px 0 }
+.ai p { margin: 6px 0 }
+.prog { height: 6px; background: var(--sunk); border-radius: 3px; overflow: hidden; margin-top: 8px }
+.prog i { display: block; height: 100%; width: 0; background: var(--gold); transition: width .15s }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 6px }
+.legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 5px; border-radius: 2px }
+.steps { margin: 6px 0 0; padding-left: 20px; display: grid; gap: 4px }
+code, .mono { font-family: var(--f-mono); font-size: 12px }
+pre.code { background: var(--sunk); padding: 10px; border-radius: 6px; overflow-x: auto; font-family: var(--f-mono); font-size: 12px; margin: 6px 0 }
+.strip { display: flex; gap: 6px; flex-wrap: wrap }
+.strip button { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-family: var(--f-mono); font-size: 13px }
+.strip button[aria-pressed="true"] { background: var(--gold); border-color: var(--gold); color: var(--gold-ink) }
+.strip button small { display: block; font-family: var(--f-body); font-size: 10px; opacity: .75 }
+select.sel { padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg) }
+.toast { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 9px 14px; border-radius: 6px; font-size: 13px; z-index: 20 }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important } }
+</style>

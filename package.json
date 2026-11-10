@@ -1,0 +1,11 @@
+{
+  "name": "c2-edge",
+  "private": true,
+  "description": "FM fractal model research desk for gold and FX: data pipeline, backtest and web app",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test tests/engine.test.mjs && python3 -m unittest discover -s tests",
+    "fixture": "node tests/make_fixture_data.mjs site/data 30 && node scripts/run_backtest.mjs --data site/data --quick && node web/build.mjs --out site",
+    "build": "node web/build.mjs --out site"
+  }
+}

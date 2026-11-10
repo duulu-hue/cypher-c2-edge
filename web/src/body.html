@@ -1,0 +1,281 @@
+<header class="top">
+  <div class="brand"><h1>C2 Edge</h1><span class="sym">XAUUSD</span></div>
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button role="tab" data-tab="backtest" aria-selected="true">Backtest</button>
+    <button role="tab" data-tab="optimize" aria-selected="false">Optimizer</button>
+    <button role="tab" data-tab="delta" aria-selected="false">Delta Lab</button>
+    <button role="tab" data-tab="news" aria-selected="false">News &amp; AI</button>
+    <button role="tab" data-tab="data" aria-selected="false">Data</button>
+  </nav>
+  <div class="spacer"></div>
+  <span class="pill" id="dataPill"><span class="dot"></span><span id="dataPillTxt">Loading…</span></span>
+  <button class="btn primary" id="runBtn">Run backtest</button>
+</header>
+
+<div class="wrap">
+  <aside class="rail" aria-label="Strategy settings">
+    <details class="grp" open>
+      <summary>Model</summary>
+      <div class="fields">
+        <div class="f"><span class="lab">Fractals to test</span>
+          <label class="chk"><input type="checkbox" id="fr_1-15" checked> 1m – 15m</label>
+          <label class="chk"><input type="checkbox" id="fr_5-60" checked> 5m – 1H</label>
+          <label class="chk"><input type="checkbox" id="fr_15-240" checked> 15m – 4H</label>
+        </div>
+        <div class="f"><label for="entryModel">Entry trigger</label>
+          <select id="entryModel"><option value="cisd">CISD close (market)</option><option value="retest">CISD retest (limit)</option><option value="ic">IC-CISD protected swing</option></select></div>
+        <div class="f"><label for="side">Direction</label>
+          <select id="side"><option value="both">Long and short</option><option value="long">Long only</option><option value="short">Short only</option></select></div>
+        <div class="row2">
+          <label class="chk"><input type="checkbox" id="useC4Invalid" checked> C4 T-spot rule</label>
+          <label class="chk"><input type="checkbox" id="timeExit" checked> Exit at C4 end</label>
+        </div>
+      </div>
+    </details>
+    <details class="grp" open>
+      <summary>Risk &amp; targets</summary>
+      <div class="fields">
+        <div class="row2">
+          <div class="f"><label for="stopMode">Stop at</label><select id="stopMode"><option value="extreme">C2 sweep extreme</option><option value="tight">Protected swing (IC)</option></select></div>
+          <div class="f"><label for="bufferATR">Buffer (ATR)</label><input type="number" id="bufferATR" value="0.25" step="0.05" min="0"></div>
+        </div>
+        <div class="row2">
+          <div class="f"><label for="targetMode">Target</label><select id="targetMode"><option value="rr">Fixed R:R</option><option value="sd">CISD projection (SD)</option><option value="liq">C2 / C1 liquidity</option></select></div>
+          <div class="f"><label for="rr">R:R / SD</label><input type="number" id="rr" value="2" step="0.25" min="0.5"></div>
+        </div>
+        <div class="row2">
+          <div class="f"><label for="minRR">Min R:R</label><input type="number" id="minRR" value="1.5" step="0.25" min="0"></div>
+          <div class="f"><label for="maxChase">Max chase</label><input type="number" id="maxChase" value="0.5" step="0.1" min="0"></div>
+        </div>
+        <div class="row2">
+          <div class="f"><label for="beAtR">Breakeven at R (0 off)</label><input type="number" id="beAtR" value="1" step="0.25" min="0"></div>
+          <div class="f"><label for="maxRiskATR">Max stop (ATR)</label><input type="number" id="maxRiskATR" value="6" step="0.5" min="0.5"></div>
+        </div>
+        <div class="row2">
+          <div class="f"><label for="partialAtR">Partial at R (0 off)</label><input type="number" id="partialAtR" value="0" step="0.25" min="0"></div>
+          <div class="f"><label for="partialPct">Partial %</label><input type="number" id="partialPct" value="50" step="10" min="10" max="90"></div>
+        </div>
+        <p class="hint">Max chase skips a market entry that is already more than this fraction of the CISD-to-sweep range away from the CISD level.</p>
+      </div>
+    </details>
+    <details class="grp" open>
+      <summary>Filters</summary>
+      <div class="fields">
+        <div class="f"><label for="sessions">Entry hours (UTC)</label>
+          <select id="sessions"><option value="ldn_ny">London + New York 07–17</option><option value="ldn">London 07–12</option><option value="ny">New York 12–17</option><option value="all">All hours</option></select></div>
+        <div class="f"><label for="vwapMode">Session VWAP</label>
+          <select id="vwapMode"><option value="off">Off</option><option value="trend">Trend: trade the side price is on</option><option value="discount">Value: sweep beyond the ±1σ band</option></select></div>
+        <div class="row2">
+          <div class="f"><label for="frvpMode">FRVP (prior session)</label>
+            <select id="frvpMode"><option value="off">Off</option><option value="level">Sweep at POC / VA / HVN / naked POC</option><option value="value">Sweep below POC (long) / above (short)</option></select></div>
+          <div class="f"><label for="frvpTolATR">Level tolerance (ATR)</label><input type="number" id="frvpTolATR" value="0.5" step="0.1" min="0"></div>
+        </div>
+        <div class="f"><label for="levelVol">Volume for VWAP / FRVP</label>
+          <select id="levelVol"><option value="broker">Broker volume</option><option value="futures">External volume (futures / Binance)</option><option value="unit">No volume (time at price)</option></select></div>
+        <div class="row2">
+          <div class="f"><label for="deltaMode">Delta</label>
+            <select id="deltaMode"><option value="off">Off</option><option value="disp">Displacement agrees</option><option value="div">CVD divergence at sweep</option></select></div>
+          <div class="f"><label for="deltaVol">Delta volume</label>
+            <select id="deltaVol"><option value="broker">Broker</option><option value="futures">External</option><option value="unit">Unit</option></select></div>
+        </div>
+        <div class="f"><label for="deltaSrc">Delta source</label><select id="deltaSrc"></select></div>
+      </div>
+    </details>
+    <details class="grp">
+      <summary>News blackout</summary>
+      <div class="fields">
+        <div class="row2">
+          <div class="f"><label for="newsBefore">No entries before (min)</label><input type="number" id="newsBefore" value="30" min="0" step="5"></div>
+          <div class="f"><label for="newsAfter">…and after (min)</label><input type="number" id="newsAfter" value="30" min="0" step="5"></div>
+        </div>
+        <div class="f"><label for="newsFlatten">Close open trades before release (min, 0 off)</label><input type="number" id="newsFlatten" value="5" min="0" step="1"></div>
+        <label class="chk"><input type="checkbox" id="useClaims"> Include weekly jobless claims</label>
+      </div>
+    </details>
+    <details class="grp">
+      <summary>Costs &amp; account</summary>
+      <div class="fields">
+        <div class="row2">
+          <div class="f"><label for="spread">Spread (price)</label><input type="number" id="spread" value="0.30" step="0.05" min="0"></div>
+          <div class="f"><label for="commPerLot">Commission ($/lot RT)</label><input type="number" id="commPerLot" value="7" step="1" min="0"></div>
+        </div>
+        <div class="row2">
+          <div class="f"><label for="slippage">Slippage (price per fill)</label><input type="number" id="slippage" value="0.10" step="0.05" min="0"></div>
+          <div class="f"><label for="riskPct">Risk per trade %</label><input type="number" id="riskPct" value="0.5" step="0.1" min="0.05"></div>
+        </div>
+        <div class="row2">
+          <div class="f"><label for="equity">Starting equity $</label><input type="number" id="equity" value="10000" step="1000" min="100"></div>
+          <div class="f"><label for="isFrac">In-sample share</label><input type="number" id="isFrac" value="0.67" step="0.01" min="0.3" max="0.9"></div>
+        </div>
+        <div class="row2">
+          <div class="f"><label for="contractSize">Units per lot</label><input type="number" id="contractSize" value="100" step="1" min="1"></div>
+          <div class="f"><label for="feeBps">Exchange fee (bps, round trip)</label><input type="number" id="feeBps" value="0" step="1" min="0"></div>
+        </div>
+        <p class="hint">The first share of the date range is in-sample (where you tune); the rest is out-of-sample (the honest test).</p>
+      </div>
+    </details>
+    <details class="grp">
+      <summary>Sessions &amp; candles</summary>
+      <div class="fields">
+        <div class="f"><label for="anchor">Session reset (VWAP, FRVP)</label>
+          <select id="anchor"><option value="ny17">17:00 New York (gold rollover)</option><option value="utc0">00:00 UTC</option></select></div>
+        <div class="f"><label for="htfOffset">4H candle alignment (hours past 00:00 UTC)</label><input type="number" id="htfOffset" value="0" min="0" max="3" step="1"></div>
+      </div>
+    </details>
+  </aside>
+
+  <main>
+    <!-- BACKTEST -->
+    <section data-view="backtest" class="view">
+      <div class="card" id="histCard" hidden>
+        <div class="strip" id="marketStrip" role="group" aria-label="Market"></div>
+        <p class="hint" id="histText" style="max-width:78ch;margin:12px 0"></p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <label for="period" class="hint">Period</label>
+          <select id="period" class="sel"><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90" selected>Last 90 days</option></select>
+          <button class="btn primary" id="histRun">Run history test</button>
+          <span class="hint" id="histStatus"></span>
+        </div>
+      </div>
+      <div class="card" id="ghCard" hidden>
+        <div class="head"><h2>Latest GitHub run</h2><span class="hint" id="ghWhen"></span></div>
+        <p class="hint">Computed on GitHub with the default settings for this market. Your settings on the left only change the results below.</p>
+        <div class="tbl"><table id="ghTable"><thead><tr><th>Fractal</th><th class="n">Trades</th><th class="n">Win rate</th><th class="n">Avg R</th><th class="n">Profit factor</th><th class="n">Net</th><th class="n">Max DD</th><th class="n">OOS R (trades)</th><th>Best optimizer setting, in-sample → out-of-sample</th><th class="n">Robust top-10</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="banner" id="synthBanner" hidden><b>Synthetic demo data.</b> These numbers come from simulated gold prices that let you see the app working; they say nothing about the strategy. Load your real XAUUSD candles in <a href="#data" data-goto="data">Data</a> to get the 90-day result.</div>
+      <div class="card">
+        <div class="head"><h2>Fractal comparison</h2><span class="hint" id="rangeTxt"></span></div>
+        <div class="tbl"><table id="frTable"><thead><tr><th>Fractal</th><th class="n">Trades</th><th class="n">Win rate</th><th class="n">Avg R</th><th class="n">Profit factor</th><th class="n">Net</th><th class="n">Max DD</th><th class="n">In-sample R</th><th class="n">Out-of-sample R</th></tr></thead><tbody></tbody></table></div>
+        <p class="hint">Click a row to inspect it. Avg R is expectancy per trade after spread, commission and slippage.</p>
+      </div>
+      <div class="card">
+        <div class="head"><h2 id="selTitle">5m – 1H</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="aiReviewBtn" hidden>AI risk review</button><button class="btn" id="exportBtn" hidden>Export trades CSV</button></div></div>
+        <div class="kpis" id="kpis"></div>
+      </div>
+      <div class="card" id="aiReviewCard" hidden><div class="head"><h2>AI risk review</h2><button class="btn" id="aiReviewStop">Stop</button></div><div class="ai" id="aiReviewOut"></div></div>
+      <div class="card">
+        <div class="head"><h2>Price, VWAP and trades</h2><span class="hint" id="chartHint">Click a trade below to jump to it</span></div>
+        <div class="chart" id="priceChart"></div>
+        <div class="legend"><span><i style="background:var(--gold)"></i>Session VWAP</span><span><i style="background:var(--buy)"></i>Long</span><span><i style="background:var(--sell)"></i>Short</span><span><i style="background:var(--muted)"></i>Stop / target of selected trade</span></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h2>Equity</h2><p class="hint">Gold line: in-sample. Teal line: out-of-sample.</p><div class="chart sm" id="eqChart"></div></div>
+        <div class="card"><h2>Why setups were skipped</h2><p class="hint">Every C2 the model found, and what stopped it becoming a trade.</p><div id="skipList"></div></div>
+      </div>
+      <div class="grid2">
+        <div class="card"><h2>Exits</h2><div id="exitList"></div></div>
+        <div class="card"><h2>Drawdown risk</h2><p class="hint">1,000 reshuffles of the same trades at your risk per trade.</p><div id="mcBox"></div></div>
+      </div>
+      <div class="card">
+        <div class="head"><h2>Trades</h2><span class="hint" id="tradeCount"></span></div>
+        <div class="tbl" style="max-height:420px;overflow:auto"><table id="tradeTable"><thead><tr><th>Entry (UTC)</th><th>Side</th><th>Sample</th><th class="n">Entry</th><th class="n">Stop</th><th class="n">Target</th><th class="n">Exit</th><th class="n">R</th><th class="n">P&amp;L $</th><th>Exit reason</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- OPTIMIZER -->
+    <section data-view="optimize" class="view" hidden>
+      <div class="card">
+        <h2>Parameter search</h2>
+        <p class="hint">Tests every combination of entry trigger, target, VWAP, FRVP, delta filter and stop buffer. It ranks on the in-sample period only, then shows how each finalist did on the out-of-sample period it never saw. A setting that only works in-sample is curve-fit.</p>
+        <div class="row2" style="max-width:560px;margin-top:10px">
+          <div class="f"><label for="optFr">Fractal</label><select id="optFr"><option value="5-60">5m – 1H</option><option value="15-240">15m – 4H</option><option value="1-15">1m – 15m</option></select></div>
+          <div class="f"><label for="optObj">Rank by</label><select id="optObj"><option value="t">Expectancy × √trades (robust)</option><option value="exp">Expectancy (R per trade)</option><option value="pf">Profit factor</option><option value="wr">Win rate (R:R ≥ 1.5 only)</option></select></div>
+        </div>
+        <div class="row2" style="max-width:560px;margin-top:8px">
+          <div class="f"><label for="optMin">Min in-sample trades</label><input type="number" id="optMin" value="15" min="5" step="1"></div>
+          <div class="f" style="align-self:end"><button class="btn primary" id="optRun">Run search</button></div>
+        </div>
+        <div class="prog" id="optProg" hidden><i></i></div>
+        <p class="hint" id="optStatus"></p>
+      </div>
+      <div class="card" id="optResCard" hidden>
+        <div class="head"><h2>Top settings</h2><span class="hint" id="optSummary"></span></div>
+        <div class="tbl"><table id="optTable"><thead><tr><th>#</th><th>Entry</th><th>Target</th><th>VWAP</th><th>FRVP</th><th>Delta</th><th class="n">Buffer</th><th class="n">IS trades</th><th class="n">IS win</th><th class="n">IS R</th><th class="n">OOS trades</th><th class="n">OOS win</th><th class="n">OOS R</th><th></th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- DELTA LAB -->
+    <section data-view="delta" class="view" hidden>
+      <div class="card">
+        <h2>Which delta source is worth using?</h2>
+        <p class="hint">Without tick data, delta is estimated from candles. This tests each estimate two ways: how often it called the direction of the next few bars, and how the strategy did with it as a filter. Pick on in-sample, trust out-of-sample.</p>
+        <div class="row2" style="max-width:560px;margin-top:10px">
+          <div class="f"><label for="dlFr">Fractal</label><select id="dlFr"><option value="5-60">5m – 1H</option><option value="15-240">15m – 4H</option><option value="1-15">1m – 15m</option></select></div>
+          <div class="f" style="align-self:end"><button class="btn primary" id="dlRun">Run Delta Lab</button></div>
+        </div>
+        <div class="prog" id="dlProg" hidden><i></i></div>
+        <p class="hint" id="dlStatus"></p>
+      </div>
+      <div class="card" id="dlResCard" hidden>
+        <div class="head"><h2>Results</h2><span class="hint" id="dlBest"></span></div>
+        <div class="tbl"><table id="dlTable"><thead><tr><th>Delta source</th><th>Volume</th><th class="n">Next-bars hit rate</th><th class="n">Correlation</th><th>Filter</th><th class="n">IS trades</th><th class="n">IS R</th><th class="n">OOS trades</th><th class="n">OOS R</th><th class="n">OOS vs no filter</th><th></th></tr></thead><tbody></tbody></table></div>
+        <p class="hint">Hit rate above 50% means the delta over the last 3 bars pointed the same way as the next 3 bars more often than a coin flip (out-of-sample bars only).</p>
+      </div>
+    </section>
+
+    <!-- NEWS -->
+    <section data-view="news" class="view" hidden>
+      <div class="grid2">
+        <div class="card">
+          <h2>Forex Factory feed</h2>
+          <p class="hint" id="ffIntro">This page can't reach other websites, so bring the calendar in: open the feed link, copy everything, and paste it here. Or drop the file the helper script saves.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px" id="ffLiveRow" hidden><button class="btn" id="ffRefresh">Refresh now</button><span class="hint" id="ffLiveStatus"></span></div>
+          <p style="margin:8px 0"><a href="https://nfs.faireconomy.media/ff_calendar_thisweek.json" target="_blank" rel="noopener">Open this week's feed (JSON)</a> · <a href="https://www.forexfactory.com/calendar" target="_blank" rel="noopener">forexfactory.com/calendar</a></p>
+          <div class="drop" id="ffDrop"><textarea id="ffText" placeholder='Paste the JSON here, e.g. [{"title":"CPI m/m","country":"USD","date":"2026-11-10T08:30:00-05:00","impact":"High","forecast":"0.3%","previous":"0.2%"}, …]'></textarea>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><button class="btn primary" id="ffLoad">Load calendar</button><input type="file" id="ffFile" accept=".json,.csv,.txt" aria-label="Calendar file"><span class="hint" id="ffStatus"></span></div></div>
+        </div>
+        <div class="card">
+          <h2>AI news desk</h2>
+          <p class="hint">Claude reads the upcoming events plus how gold reacted to the same releases in your data, and writes a scenario plan. It cannot know the numbers before they print.</p>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap"><button class="btn primary" id="aiNewsBtn">Write news brief</button><button class="btn" id="aiNewsStop" hidden>Stop</button></div>
+          <div class="ai" id="aiNewsOut" style="margin-top:10px"></div>
+          <div id="ghBrief" hidden><p class="hint" id="ghBriefWhen" style="margin-top:12px"></p><div class="ai" id="ghBriefOut"></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="head"><h2>Upcoming events</h2><span class="hint" id="upHint"></span></div>
+        <div class="tbl"><table id="upTable"><thead><tr><th>When (your time)</th><th>In</th><th>Event</th><th>Impact</th><th class="n">Forecast</th><th class="n">Previous</th><th class="n">Typical 60-min range</th><th>If it beats forecast</th><th>Actual</th><th>Gold bias</th></tr></thead><tbody></tbody></table></div>
+        <p class="hint">Typical range is the median high-to-low move in the hour after past releases of the same kind in your loaded data. Type the actual figure after the release to get the read-through.</p>
+      </div>
+      <div class="card">
+        <h2>How gold reacted (last 90 days)</h2>
+        <p class="hint">Measured from the open of the release minute. Positive = gold up.</p>
+        <div class="tbl"><table id="esTable"><thead><tr><th>Release</th><th class="n">Events</th><th class="n">Median |15m|</th><th class="n">Median |60m|</th><th class="n">Median 60m range</th><th class="n">Largest 60m range</th><th class="n">Up after 60m</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+
+    <!-- DATA -->
+    <section data-view="data" class="view" hidden>
+      <div class="card">
+        <h2>Load your data</h2>
+        <p class="hint">Files stay in your browser. Nothing is uploaded.</p>
+        <div class="grid2" style="margin-top:10px">
+          <div class="drop" id="dropPrice"><b>1 · XAUUSD candles (required)</b>
+            <span class="hint">1-minute is best: it lets you test every fractal and the intrabar delta sources. 90+ days. TradingView, MT4/MT5, Dukascopy or the helper script's CSV.</span>
+            <input type="file" id="filePrice" accept=".csv,.txt,.tsv" aria-label="Price CSV">
+            <div class="row2"><div class="f"><label for="tzPrice">Clock of the file (UTC offset, hours)</label><input type="number" id="tzPrice" value="0" step="1" min="-12" max="14"></div></div>
+            <span class="hint" id="priceStatus"></span></div>
+          <div class="drop" id="dropFut"><b>2 · Gold futures volume (optional, recommended)</b>
+            <span class="hint">COMEX GC1! on the same timeframe. Spot gold feeds have tick volume or none; futures volume is real traded volume, which FRVP, VWAP and delta need to mean something.</span>
+            <input type="file" id="fileFut" accept=".csv,.txt,.tsv" aria-label="Futures CSV">
+            <div class="row2"><div class="f"><label for="tzFut">Clock of the file (UTC offset, hours)</label><input type="number" id="tzFut" value="0" step="1" min="-12" max="14"></div></div>
+            <span class="hint" id="futStatus"></span></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><button class="btn" id="useDemo">Use synthetic demo data</button></div>
+      </div>
+      <div class="card">
+        <h2>Getting 90 days of data</h2>
+        <ul class="steps">
+          <li><b>MT5:</b> View → Symbols → Bars, pick XAUUSD and M1, set the dates, Request, then Export Bars. MT5 times are in your broker's server clock (often UTC+2 or +3), so set the offset above.</li>
+          <li><b>TradingView:</b> export chart data from OANDA:XAUUSD (price) and COMEX:GC1! (volume) at 1 minute. Unix timestamps are already UTC.</li>
+          <li><b>Twelve Data:</b> run the helper script Claude sent you in chat. It saves <code>xauusd_1min.csv</code> and this week's Forex Factory calendar.</li>
+        </ul>
+        <pre class="code">python3 xau_data_fetch.py --key YOUR_TWELVE_DATA_KEY --interval 1min --days 90</pre>
+        <p class="hint">Twelve Data's spot gold has no volume, so pair it with a GC1! export for the volume-based filters.</p>
+      </div>
+      <div class="card"><h2>Loaded</h2><div id="dataSummary" class="hint"></div></div>
+      <div class="card" id="pipeCard" hidden><h2>GitHub data pipeline</h2><div class="tbl"><table id="pipeTable"><thead><tr><th>Market</th><th>Source</th><th class="n">Bars</th><th>Range (UTC)</th><th>Real taker delta</th><th>External volume</th></tr></thead><tbody></tbody></table></div><p class="hint" id="pipeNote"></p></div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
