@@ -16,7 +16,7 @@ on:
     - cron: '41 5,11,15 * * 1-5' # news refresh through the trading day
 
 permissions:
-  contents: read
+  contents: write   # only used to save the results snapshot to the `results` branch
   pages: write
   id-token: write
 
@@ -59,6 +59,20 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           AI_MODEL: ${{ vars.AI_MODEL }}
         run: python scripts/ai_brief.py site/data
+      - name: Save results to the results branch
+        if: always()
+        run: |
+          mkdir -p /tmp/out
+          cp -r site/data/results /tmp/out/ 2>/dev/null || true
+          cp site/data/status.json site/data/markets.json /tmp/out/ 2>/dev/null || true
+          cp site/data/news/brief.json /tmp/out/ 2>/dev/null || true
+          cd /tmp/out
+          git init -q -b results
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "Results snapshot $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push -fq "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" results
       - name: Build site
         run: node web/build.mjs --out site
       - uses: actions/upload-pages-artifact@v3
