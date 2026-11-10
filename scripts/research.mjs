@@ -37,7 +37,7 @@ export function research(E, combos, base, fr, P, news) {
   });
 
   // 2. rolling walk-forward windows
-  const trainDays = Math.max(30, Math.round(spanDays * 0.33)), testDays = Math.max(10, Math.round(trainDays / 4));
+  const trainDays = Math.max(10, Math.round(spanDays * 0.33)), testDays = Math.max(5, Math.round(trainDays / 4));
   const minN = Math.max(8, Math.round(trainDays / 8));
   const folds = [], oosR = [], freq = {};
   for (let a = start; a + (trainDays + testDays) * DAY <= end + DAY; a += testDays * DAY) {
