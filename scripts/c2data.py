@@ -23,6 +23,7 @@ import time
 import urllib.error
 import urllib.request
 import zipfile
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 
 UA = "Mozilla/5.0 (compatible; C2EdgeBot/1.0; +https://github.com)"
@@ -34,7 +35,7 @@ def log(*a):
 
 
 # --------------------------------------------------------------------------- http + cache
-def http_get(url, timeout=30, retries=3):
+def http_get(url, timeout=20, retries=2):
     """Returns bytes, or None for a 404 (no data for that day). Raises on other failures."""
     last = None
     for attempt in range(retries):
@@ -82,6 +83,34 @@ def day_range(days, end=None):
 
 def immutable_day(d):
     return d < datetime.now(timezone.utc).date() - timedelta(days=1)
+
+
+def fetch_days(days, fetch_one, label, workers=8):
+    """Download one file per day in parallel (the slow part is waiting on the server).
+    fetch_one(day) returns a list of bars or raises; failures count as missing days."""
+    out, missing, done = [], 0, 0
+    t0 = time.time()
+
+    def safe(d):
+        try:
+            return fetch_one(d), None
+        except Exception as e:
+            return None, e
+
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for d, (bars, err) in zip(days, ex.map(safe, days)):
+            done += 1
+            if err is not None:
+                missing += 1
+                log(f"  {label} {d}: {err}")
+            elif bars is None:
+                missing += 1
+            else:
+                out.extend(bars)
+            if done % 15 == 0 or done == len(days):
+                log(f"  {label}: {done}/{len(days)} days, {len(out):,} bars, {time.time() - t0:.0f}s")
+    out.sort(key=lambda b: b["t"])
+    return out, missing
 
 
 # --------------------------------------------------------------------------- Dukascopy
@@ -133,25 +162,12 @@ def parse_bi5_candles(raw, day, point):
 
 
 def fetch_dukascopy(symbol, point, days, cache_dir, end=None):
-    bars, missing = [], 0
-    for d in day_range(days, end):
-        if d.weekday() == 5:  # Saturday: market closed
-            continue
+    def one(d):
         url = DUKA_URL.format(sym=symbol, y=d.year, m=d.month - 1, d=d.day)  # month is zero-based
-        key = f"duka/{symbol}/{d.isoformat()}.bi5"
-        try:
-            raw = cached_get(cache_dir, key, url, immutable_day(d))
-        except Exception as e:
-            log(f"  {symbol} {d}: {e}")
-            missing += 1
-            continue
-        try:
-            bars.extend(parse_bi5_candles(raw, d, point))
-        except Exception as e:
-            log(f"  {symbol} {d}: {e}")
-            missing += 1
-    bars.sort(key=lambda b: b["t"])
-    return bars, missing
+        raw = cached_get(cache_dir, f"duka/{symbol}/{d.isoformat()}.bi5", url, immutable_day(d))
+        return parse_bi5_candles(raw, d, point)
+    days_list = [d for d in day_range(days, end) if d.weekday() != 5]  # Saturday: market closed
+    return fetch_days(days_list, one, symbol, workers=6)
 
 
 # --------------------------------------------------------------------------- Binance archive
@@ -185,22 +201,21 @@ def parse_binance_zip(raw):
 
 
 def fetch_binance(source, symbol, days, cache_dir, end=None):
-    bars, missing = [], 0
-    for d in day_range(days, end):
+    def one(d):
         url = BINANCE_URL[source].format(sym=symbol, d=d.isoformat())
-        key = f"{source}/{symbol}/{d.isoformat()}.zip"
-        try:
-            raw = cached_get(cache_dir, key, url, immutable_day(d))
-        except Exception as e:
-            log(f"  {source}:{symbol} {d}: {e}")
-            missing += 1
-            continue
-        if raw is None:
-            missing += 1
-            continue
-        bars.extend(parse_binance_zip(raw))
-    bars.sort(key=lambda b: b["t"])
-    return bars, missing
+        raw = cached_get(cache_dir, f"{source}/{symbol}/{d.isoformat()}.zip", url, immutable_day(d))
+        return parse_binance_zip(raw) if raw is not None else None
+    # check the most recent day first: if the symbol isn't in the archive, skip it quickly
+    recent = day_range(days, end)[-3:]
+    try:
+        probe = [cached_get(cache_dir, f"{source}/{symbol}/{d.isoformat()}.zip", BINANCE_URL[source].format(sym=symbol, d=d.isoformat()), immutable_day(d)) for d in recent]
+    except Exception as e:
+        log(f"  {source}:{symbol}: {e}")
+        return [], days
+    if all(p is None for p in probe):
+        log(f"  {source}:{symbol}: not in the Binance archive, skipping")
+        return [], days
+    return fetch_days(day_range(days, end), one, f"{source}:{symbol}", workers=8)
 
 
 def fetch_market_bars(m, days, cache_dir, end=None):

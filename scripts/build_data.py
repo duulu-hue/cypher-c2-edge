@@ -46,6 +46,7 @@ def main():
     ap.add_argument("--only", help="comma-separated market ids")
     ap.add_argument("--prev-url", help="URL of the deployed site, to carry the news history forward")
     ap.add_argument("--skip-news", action="store_true")
+    ap.add_argument("--budget-min", type=float, default=45, help="stop starting new markets after this many minutes")
     a = ap.parse_args()
 
     cfg = json.load(open(a.config))
@@ -54,8 +55,13 @@ def main():
     status = {"startedAt": int(time.time() * 1000), "days": days, "markets": {}, "news": {}}
     manifest = []
 
+    started = time.time()
     for m in cfg["markets"]:
         if only and m["id"] not in only:
+            continue
+        if (time.time() - started) / 60 > a.budget_min:
+            status["markets"][m["id"]] = {"ok": False, "error": "skipped: time budget used up; the next run continues from the cache"}
+            c2data.log(f"{m['id']}: skipped, time budget used up")
             continue
         t0 = time.time()
         c2data.log(f"{m['id']}: fetching {days} days from {m['source']} …")
