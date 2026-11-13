@@ -1,0 +1,169 @@
+{
+ "generatedAt": 1794606086060,
+ "days": 90,
+ "markets": [
+  {
+   "id": "XAUUSD",
+   "name": "Gold spot",
+   "source": "dukascopy",
+   "symbol": "XAUUSD",
+   "digits": 2,
+   "currencies": [
+    "USD"
+   ],
+   "costs": {
+    "spread": 0.3,
+    "commPerLot": 7,
+    "slippage": 0.1,
+    "contractSize": 100,
+    "feeBps": 0
+   },
+   "research": [
+    "1-15",
+    "5-60",
+    "15-240"
+   ],
+   "days": 365,
+   "file": "candles/XAUUSD.json.gz",
+   "from": 1762992000000,
+   "to": 1794527940000,
+   "bars": 354384,
+   "trueDelta": false,
+   "external": {
+    "label": "Binance gold perpetual",
+    "coverage": 0.9178
+   }
+  },
+  {
+   "id": "XAUUSDT",
+   "name": "Gold perpetual (Binance)",
+   "source": "binance-um",
+   "symbol": "XAUUSDT",
+   "digits": 2,
+   "currencies": [
+    "USD"
+   ],
+   "costs": {
+    "spread": 0.1,
+    "commPerLot": 0,
+    "slippage": 0.1,
+    "contractSize": 1,
+    "feeBps": 8
+   },
+   "research": null,
+   "days": 90,
+   "file": "candles/XAUUSDT.json.gz",
+   "from": 1786752000000,
+   "to": 1794527940000,
+   "bars": 128160,
+   "trueDelta": true,
+   "external": null
+  },
+  {
+   "id": "PAXGUSDT",
+   "name": "PAX Gold (Binance spot)",
+   "source": "binance-spot",
+   "symbol": "PAXGUSDT",
+   "digits": 2,
+   "currencies": [
+    "USD"
+   ],
+   "costs": {
+    "spread": 0.5,
+    "commPerLot": 0,
+    "slippage": 0.2,
+    "contractSize": 1,
+    "feeBps": 20
+   },
+   "research": null,
+   "days": 90,
+   "file": "candles/PAXGUSDT.json.gz",
+   "from": 1786752000000,
+   "to": 1794527940000,
+   "bars": 129600,
+   "trueDelta": true,
+   "external": null
+  },
+  {
+   "id": "EURUSD",
+   "name": "Euro / US dollar",
+   "source": "dukascopy",
+   "symbol": "EURUSD",
+   "digits": 5,
+   "currencies": [
+    "USD",
+    "EUR"
+   ],
+   "costs": {
+    "spread": 8e-05,
+    "commPerLot": 7,
+    "slippage": 2e-05,
+    "contractSize": 100000,
+    "feeBps": 0
+   },
+   "research": [
+    "15-240",
+    "5-60"
+   ],
+   "days": 365,
+   "file": "candles/EURUSD.json.gz",
+   "from": 1762992000000,
+   "to": 1794441540000,
+   "bars": 370203,
+   "trueDelta": false,
+   "external": null
+  },
+  {
+   "id": "GBPUSD",
+   "name": "British pound / US dollar",
+   "source": "dukascopy",
+   "symbol": "GBPUSD",
+   "digits": 5,
+   "currencies": [
+    "USD",
+    "GBP"
+   ],
+   "costs": {
+    "spread": 0.0001,
+    "commPerLot": 7,
+    "slippage": 2e-05,
+    "contractSize": 100000,
+    "feeBps": 0
+   },
+   "research": null,
+   "days": 90,
+   "file": "candles/GBPUSD.json.gz",
+   "from": 1786914240000,
+   "to": 1794527940000,
+   "bars": 91889,
+   "trueDelta": false,
+   "external": null
+  },
+  {
+   "id": "AUDUSD",
+   "name": "Australian dollar / US dollar",
+   "source": "dukascopy",
+   "symbol": "AUDUSD",
+   "digits": 5,
+   "currencies": [
+    "USD",
+    "AUD"
+   ],
+   "costs": {
+    "spread": 0.0001,
+    "commPerLot": 7,
+    "slippage": 2e-05,
+    "contractSize": 100000,
+    "feeBps": 0
+   },
+   "research": null,
+   "days": 90,
+   "file": "candles/AUDUSD.json.gz",
+   "from": 1786914180000,
+   "to": 1794441540000,
+   "bars": 90275,
+   "trueDelta": false,
+   "external": null
+  }
+ ]
+}
