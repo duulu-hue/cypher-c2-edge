@@ -1,0 +1,75 @@
+{
+ "startedAt": 1795213265417,
+ "days": 90,
+ "markets": {
+  "XAUUSD": {
+   "ok": true,
+   "days": 365,
+   "bars": 354384,
+   "missingDays": 0,
+   "badBars": 0,
+   "external": {
+    "label": "Binance gold perpetual",
+    "coverage": 0.9373
+   },
+   "rawBytes": 19112747,
+   "seconds": 39.7
+  },
+  "XAUUSDT": {
+   "ok": true,
+   "days": 90,
+   "bars": 128160,
+   "missingDays": 1,
+   "badBars": 0,
+   "external": null,
+   "rawBytes": 6247918,
+   "seconds": 3.7
+  },
+  "PAXGUSDT": {
+   "ok": true,
+   "days": 90,
+   "bars": 129600,
+   "missingDays": 0,
+   "badBars": 0,
+   "external": null,
+   "rawBytes": 5970011,
+   "seconds": 4.4
+  },
+  "EURUSD": {
+   "ok": true,
+   "days": 365,
+   "bars": 371654,
+   "missingDays": 0,
+   "badBars": 0,
+   "external": null,
+   "rawBytes": 13340854,
+   "seconds": 22.5
+  },
+  "GBPUSD": {
+   "ok": true,
+   "days": 90,
+   "bars": 91900,
+   "missingDays": 0,
+   "badBars": 0,
+   "external": null,
+   "rawBytes": 3312869,
+   "seconds": 14.2
+  },
+  "AUDUSD": {
+   "ok": true,
+   "days": 90,
+   "bars": 91742,
+   "missingDays": 0,
+   "badBars": 0,
+   "external": null,
+   "rawBytes": 2943229,
+   "seconds": 16.1
+  }
+ },
+ "news": {
+  "fetched": 126,
+  "history": 247,
+  "errors": []
+ },
+ "finishedAt": 1795213366470
+}
